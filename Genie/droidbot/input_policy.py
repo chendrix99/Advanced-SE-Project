@@ -26,6 +26,8 @@ from .device_state import DeviceState, COLOR_BLUE, CurrentStateNoneException
 from .gui_test import GUITestCase, EXECUTION_RESULT_NOT_FULLY_REPLAYABLE, TEST_TAG_SEED_TEST, TEST_TAG_MUTANT_TEST, \
     TEST_TAG_DYNAMIC_TEST
 
+from .systematic_policy import SystematicExplorationPolicy
+
 # Max number of restarts
 MAX_NUM_RESTARTS = 5
 # Max number of steps outside the app
@@ -165,6 +167,10 @@ class UtgBasedPropertyFuzzingPolicy(InputPolicy):
     MONKEY_RANDOM_SEED_GENERATION = "random"
     MODEL_BASED_RANDOM_SEED_GENERATION = "model"
 
+    # <Caleb Hendrix>
+    # Specify a new seed test generation strategy
+    SYSTEMATIC_SEED_GENERATION = "systematic"
+
     # mutant run mode
     # default for single-thread run
     # fuzz for test generation
@@ -291,6 +297,9 @@ class UtgBasedPropertyFuzzingPolicy(InputPolicy):
         # Trie structure to record and discard unreplable mutant test
         # See: https://pypi.org/project/pygtrie/
         self.unreplayable_test_prefix_set = pygtrie.PrefixSet(factory=pygtrie.StringTrie)
+
+        # <Caleb Hendrix>
+        self.systematic_search_generation_policy = None
 
         self.random_monkey_gui_exploration_event_count = 0
         self.__nav_target = None
@@ -505,7 +514,8 @@ class UtgBasedPropertyFuzzingPolicy(InputPolicy):
 
                     if generation_strategy == UtgBasedPropertyFuzzingPolicy.MONKEY_RANDOM_SEED_GENERATION:
                         event = self.generation_event_by_monkey()
-                    elif generation_strategy == UtgBasedPropertyFuzzingPolicy.MODEL_BASED_RANDOM_SEED_GENERATION:
+                    elif (generation_strategy == UtgBasedPropertyFuzzingPolicy.MODEL_BASED_RANDOM_SEED_GENERATION or 
+                        generation_strategy == UtgBasedPropertyFuzzingPolicy.SYSTEMATIC_SEED_GENERATION):
                         event = self.generate_event_by_model()
                     else:
                         self.logger.error("fail to specify seed test generation strategy!")
@@ -1131,6 +1141,27 @@ class UtgBasedPropertyFuzzingPolicy(InputPolicy):
                     if self.seed_test_generation_exception:
                         # stop if some exceptions happen in seed test generation
                         return
+
+                #----------------------------------------------------------------------------------------------------------------
+                # <Caleb Hendrix>
+                # Perform generation of seed tests based on the time machine approach 
+                elif self.seed_test_generation_strategy == UtgBasedPropertyFuzzingPolicy.SYSTEMATIC_SEED_GENERATION:
+                    
+                    self.clustered_utg.cluster_utg_structure(self.original_utg)
+
+                    self.systematic_search_generation_policy = SystematicExplorationPolicy(self.clustered_utg)
+
+                    self.model_based_random_seed_tests = \
+                        self.systematic_search_generation_policy.generate_systematic_seed_tests(self.max_random_seed_test_length,
+                                                                                                self.max_seed_test_suite_size)
+
+                    self.generate_random_seed_tests(input_manager, self.seed_test_generation_strategy)
+
+                    if self.seed_test_generation_exception:
+                        # stop if some exceptions happen in seed test generation
+                        return
+                    pass
+                #----------------------------------------------------------------------------------------------------------------
 
         if self.mode_gen_mutants:
             # load the generated seed tests directly from files

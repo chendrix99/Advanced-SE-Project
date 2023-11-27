@@ -374,7 +374,10 @@ class ResultAnalyzer(object):
 
     def merge_reported_errors_for_one_seed_test(self, seed_test_dir):
 
-        mutants_list: List[str] = self.all_mutants_with_semantic_error[seed_test_dir]
+        mutants_list: List[str] = []
+
+        if seed_test_dir in self.all_mutants_with_semantic_error:
+            mutants_list = self.all_mutants_with_semantic_error[seed_test_dir]
 
         # key: a tuple that contains the error strs of seed test and its mutant test, respectively
         # value: a list of mutant_batch_id (corresponding to an error instances) with the execution status

@@ -196,8 +196,9 @@ def main(opts):
     if opts.seed_generation_strategy is None:
         seed_generation_strategy = UtgBasedPropertyFuzzingPolicy.MONKEY_RANDOM_SEED_GENERATION
     elif opts.seed_generation_strategy not in [UtgBasedPropertyFuzzingPolicy.MONKEY_RANDOM_SEED_GENERATION,
-                                               UtgBasedPropertyFuzzingPolicy.MODEL_BASED_RANDOM_SEED_GENERATION]:
-        print("seed generation strategy only supports \"monkey\" or \"model\"")
+                                               UtgBasedPropertyFuzzingPolicy.MODEL_BASED_RANDOM_SEED_GENERATION,
+                                               UtgBasedPropertyFuzzingPolicy.SYSTEMATIC_SEED_GENERATION]:
+        print("seed generation strategy only supports \"monkey\" or \"model\" or \"systematic\"")
         return
     else:
         seed_generation_strategy = opts.seed_generation_strategy
