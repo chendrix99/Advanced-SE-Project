@@ -5,6 +5,19 @@ Project for the Advanced Software Engineering course at the University of Cincin
 The deliverables for the project can be found in the main directory. The project report is names Project_Report.md and the slides are Advanced SE Project.pdf. As for the implementation of the systematic seed generation algorithm, 
 look in Genie/droidbot/systematic_policy.py. I wrote everything in this python class to implement this seed test generation.
 
+### Slides
+/Advanced SE Project.pdf
+
+### Project Report
+/Project_Report.md
+
+### Test Output
+https://mailuc-my.sharepoint.com/:u:/r/personal/hendricw_mail_uc_edu/Documents/test-output-files.7z?csf=1&web=1&e=EHQhGn
+
+### Code
+/Genie/droidbot/systematic_policy.py
+
+### Using the Tool
 If you with to use the Genie tool with this new systematic generation method then use the command line option as follows: -seed-generation-strategy systematic
 
 This option is used when genertating seed tests but I would also suggest using it when generation mutant tests.
